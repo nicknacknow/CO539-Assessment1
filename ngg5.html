@@ -10,6 +10,7 @@
             $(() => {
                 const REGIONS_URL = "https://www.cs.kent.ac.uk/people/staff/yh/api/country-data/countries/regions"; // Endpoint for regions
 
+                // given an array of names, this method will generate radio buttons for each name and append it to the parent element.
                 function CreateRadioButtons(button_names, section_name, parent) {
                     button_names.forEach(button_name => {
                         var out = $('<div class="m-2"/>'); // create new div element for checkbox
@@ -25,19 +26,21 @@
                     regions = regions.filter(i => i !== "Antarctic"); // remove antarctic entry
 
                     CreateRadioButtons(regions, "region", $("#regions"));
-
-                    /*regions.forEach(region => {
-                        var out = $('<div class="m-2"/>'); // create new div element for checkbox
-                        out.append(`<input class="form-check-input m-1" type="radio" name="region" id="${region}">`); // create checkbox input with id of 'region'
-                        out.append(`<label class="form-check-label" for="${region}">${region}</label>`); // create label for checkbox with id 'region'
-
-                        out.appendTo($("#regions")); // append our new checkbox div element to the #regions element
-                    });*/
                 }
 
-                // TASK 2:  this 
+                // TASK 2:  once a region button has been selected, this will be called
                 function onSelectRegion(data) {
                     console.log(data);
+                    
+                    // clear previous board-sizes
+                    let parent = $("#board-sizes");
+                    parent.empty();
+
+                    // create radio buttons
+                    CreateRadioButtons(["4 x 2", "4 x 4"], "board-size", parent);
+                    // ^^6 i dont like this, remove and revert for Task 1 and here we will just modify from html?>
+
+                    // once radio buttons are created, 
                 }
 
                 // Load Regions from API
@@ -53,7 +56,15 @@
                 Lect2.html
                 Weather Demo
 
+
+                https://getbootstrap.com/docs/4.0/utilities/spacing/
+                https://getbootstrap.com/docs/5.3/utilities/flex/
                 */
+
+                $("button").on("click", method);
+                function method() {
+                    console.log("hi");
+                }
             });
 
         </script>
@@ -63,19 +74,13 @@
         <h3 class="pt-4 pb-2">Select a region:</h3>
 
         <div id="regions" class="d-flex justify-content-center">
-            <!-- loaded in jQuery @ Line 14-->
+            <!-- loaded in jQuery @ Line 25-->
         </div>
 
         <h3 class="pt-5 pb-2">Choose the board size:</h3>
-        <div class="d-flex justify-content-center">
-            <div class="m-2">
-                <input class="form-check-input m-1" type="radio" name="board" id="4x2">
-                <label class="form-check-label" for="4x2">4 x 2</label>
-            </div>
-            <div class="m-2">
-                <input class="form-check-input m-1" type="radio" name="board" id="4x2">
-                <label class="form-check-label" for="4x2">4 x 4</label>
-            </div>
+        <div id="board-sizes" class="d-flex justify-content-center">
+            <!-- loaded in jQuery @ Line 32-->
+            <button></button>
         </div>
 
     </body>
