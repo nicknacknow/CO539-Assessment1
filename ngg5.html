@@ -11,11 +11,21 @@
                 const REGIONS_URL = "https://www.cs.kent.ac.uk/people/staff/yh/api/country-data/countries/regions"; // Endpoint for regions
 
                 // given an array of names, this method will generate radio buttons for each name and append it to the parent element.
-                function CreateRadioButtons(button_names, section_name, parent) {
+                function CreateRadioButtons(button_names, section_name, parent, callback) {
                     button_names.forEach(button_name => {
-                        var out = $('<div class="m-2"/>'); // create new div element for checkbox
-                        out.append(`<input class="form-check-input m-1" type="radio" name="${section_name}" id="${button_name}">`); // create checkbox input with id of 'region'
+                        let out = $('<div class="m-2"/>'); // create new div element for checkbox
+                        let radio = $(`<input class="form-check-input m-1" type="radio" name="${section_name}" id="${button_name}"/>`);
+                        radio.click(callback);
+                        
+                        radio.appendTo(out);
+                        //out.append(`<input class="form-check-input m-1" type="radio" name="${section_name}" id="${button_name}"/>`); // create checkbox input with id of 'region'
                         out.append(`<label class="form-check-label" for="${button_name}">${button_name}</label>`); // create label for checkbox with id 'region'
+
+                        // if callback is not null, adds click event to radio button.
+                        if (callback) {
+                            $(radio).unbind("click"); // prevents click callback from calling multiple times
+                            $(radio).click(callback);
+                        }
 
                         out.appendTo(parent); // append our new checkbox div element to the #regions element
                     })
@@ -25,7 +35,7 @@
                 function LoadRegions(regions) {
                     regions = regions.filter(i => i !== "Antarctic"); // remove antarctic entry sorry
 
-                    CreateRadioButtons(regions, "region", $("#regions"));
+                    CreateRadioButtons(regions, "region", $("#regions"), onSelectRegion);
                 }
 
                 // TASK 2:  once a region button has been selected, this will be called
@@ -38,19 +48,30 @@
                     parent.parent().css("visibility", "visible"); // make container visible
                     
                     // create radio buttons
-                    CreateRadioButtons(["4 x 2", "4 x 4"], "board-size", parent);
-                    // ^^ im not sure if i like this, could remove and revert for Task 1 and here we will just modify from html?>
-
-                    // once radio buttons are created, 
+                    CreateRadioButtons(["4 x 2", "4 x 4"], "board-size", parent, onBoardSelection);
                 }
 
+                // TASK 3
+                function onBoardSelection(e) {
+                    // load board container
+
+                    // populate board:
+                    // - calculate number of countries needed
+                    // - select number of countries
+                    // - for each country, load flag and name separately into list
+                    // - 'scramble' list (make them random)
+                    // - draw them onto html - make similar function to CreateRadioButtons?
+
+                    // number of matches text element, updated by cards on html
+                    // button to show answers
+
+                    // task 4 may require multiple callbacks passed thru as a list
+                    // for hover, click etc ? idk maybe not
+                }
+
+
                 // Load Regions from API
-                $.getJSON(REGIONS_URL, LoadRegions).then(
-                    (data) => {
-                        // once all region inputs are loaded, make them selectable.
-                        $('input[type=radio][name=region]').on("click", onSelectRegion)
-                    }
-                );
+                $.getJSON(REGIONS_URL, LoadRegions);
 
                 /*
                 Good resources:
@@ -82,8 +103,42 @@
         </div>
 
         <div id="game-container">
-            <div id="boards"> <!-- use flex stuff here to align 4x2 or 2x2.. also how do this in jquery -->
+            <div class="container">
+                <div class="row row-cols-5"> <!-- cols-5 since each child has a margin that needs to be accounted for -->
+                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
+                        <p class="fs-5 m-1">Slovenia</p>
+                        <p class="fs-6">Capital: ldbjbbugj</p>
+                    </div>
+                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
+                        <p class="fs-5 m-1">Slovenia</p>
+                        <p class="fs-6">Capital: ldbjbbugj</p>
+                    </div>
+                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
+                        <p class="fs-5 m-1">Slovenia</p>
+                        <p class="fs-6">Capital: ldbjbbugj</p>
+                    </div>
+                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
+                        <p class="fs-5 m-1">Slovenia</p>
+                        <p class="fs-6">Capital: ldbjbbugj</p>
+                    </div>
 
+                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
+                        <p class="fs-5 m-1">Slovenia</p>
+                        <p class="fs-6">Capital: ldbjbbugj</p>
+                    </div>
+                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
+                        <p class="fs-5 m-1">Slovenia</p>
+                        <p class="fs-6">Capital: ldbjbbugj</p>
+                    </div>
+                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
+                        <p class="fs-5 m-1">Slovenia</p>
+                        <p class="fs-6">Capital: ldbjbbugj</p>
+                    </div>
+                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
+                        <p class="fs-5 m-1">Slovenia</p>
+                        <p class="fs-6">Capital: ldbjbbugj</p>
+                    </div>
+                </div>
             </div>
         </div>
     </body>
