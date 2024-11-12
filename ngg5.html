@@ -9,6 +9,7 @@
         <script>
             $(() => {
                 const REGIONS_URL = "https://www.cs.kent.ac.uk/people/staff/yh/api/country-data/countries/regions"; // Endpoint for regions
+                const REGION_DATA_URL = "https://www.cs.kent.ac.uk/people/staff/yh/api/country-data/countries/region/"; // needs to be appended for specific region
 
                 // given an array of names, this method will generate radio buttons for each name and append it to the parent element.
                 function CreateRadioButtons(button_names, section_name, parent, callback) {
@@ -39,9 +40,7 @@
                 }
 
                 // TASK 2:  once a region button has been selected, this will be called
-                function onSelectRegion(data) {
-                    console.log(data);
-                    
+                function onSelectRegion(data) {                    
                     // clear previous board-sizes
                     let parent = $("#board-sizes");
                     parent.empty(); // empty previous radio buttons
@@ -52,13 +51,55 @@
                 }
 
                 // TASK 3
-                function onBoardSelection(e) {
-                    // load board container
+
+                function getRandomValueFromArray(arr) {
+                    return arr[Math.floor(Math.random() * arr.length)];
+                }
+
+                async function getRandomCountriesByRegion(reg, len) {
+                    let countries = [];
+
+                    await $.getJSON(REGION_DATA_URL + reg, (data) => {
+                        while (countries.length < len) {
+                            let country = getRandomValueFromArray(data);
+                            if (!countries.includes(country)) { // prevent conflicts
+                                countries.push(country);
+                            }
+                        }
+                    });
+
+                    return countries;
+                }
+
+                function separateCountryData(countries) {
+                    let separate_country_data = [];
+
+                    countries.forEach(country => {
+                        let name = country.name; // work on this
+                    });
+
+                    return separate_country_data;
+                }
+
+                async function onBoardSelection(e) {
+                    // load board container#
 
                     // populate board:
+                    // - get selected region
+                    let selectedRegion = $('input[name="region"]:checked')[0].id;
+                    console.log(selectedRegion);
+
                     // - calculate number of countries needed
+                    let numCountries = (e.target.id == "4 x 4") ? 16 : 8;
+                    console.log(numCountries);
+
                     // - select number of countries
+                    //      this function should need await & async but it works without ? just gonna use it to be safe
+                    let countries = await getRandomCountriesByRegion(selectedRegion, numCountries); 
+                    console.log(countries);
+
                     // - for each country, load flag and name separately into list
+                    separateCountryData(countries);
                     // - 'scramble' list (make them random)
                     // - draw them onto html - make similar function to CreateRadioButtons?
 
@@ -102,7 +143,7 @@
             </div>
         </div>
 
-        <div id="game-container">
+        <div id="game-container" class="pt-3">
             <div class="container">
                 <div class="row row-cols-5"> <!-- cols-5 since each child has a margin that needs to be accounted for -->
                     <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
