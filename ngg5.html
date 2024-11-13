@@ -24,8 +24,8 @@
 
                         // if callback is not null, adds click event to radio button.
                         if (callback) {
-                            $(radio).unbind("click"); // prevents click callback from calling multiple times
-                            $(radio).click(callback);
+                            radio.unbind("click"); // prevents click callback from calling multiple times bug
+                            radio.click(callback);
                         }
 
                         out.appendTo(parent); // append our new checkbox div element to the #regions element
@@ -45,15 +45,28 @@
                     let parent = $("#board-sizes");
                     parent.empty(); // empty previous radio buttons
                     parent.parent().css("visibility", "visible"); // make container visible
+
+                    // empty game board container (if it was previously selected)
+                    $(`#game-container .container .row`).empty();
                     
                     // create radio buttons
-                    CreateRadioButtons(["4 x 2", "4 x 4"], "board-size", parent, onBoardSelection);
+                    CreateRadioButtons(["4 x 2", "4 x 4"], "board-size", parent, onBoardSizeSelection);
                 }
 
                 // TASK 3
 
+                function getRandomNumber(max) {
+                    return Math.floor(Math.random() * max);
+                }
+
                 function getRandomValueFromArray(arr) {
-                    return arr[Math.floor(Math.random() * arr.length)];
+                    return arr[getRandomNumber(arr.length)];
+                }
+
+                function shuffleArray(arr) {
+                    let temp = arr;
+                    temp.sort(() => Math.random() - 0.5); // easy way to shuffle
+                    return temp;
                 }
 
                 async function getRandomCountriesByRegion(reg, len) {
@@ -76,38 +89,120 @@
 
                     countries.forEach(country => {
                         let name = country.name; // work on this
+                        let capital = country.capital
+
+                        let flag = country.flag;
+
+                        separate_country_data.push([name, capital]);
+                        separate_country_data.push(flag); // identify via flag, stored in first but wont be displayed
                     });
 
                     return separate_country_data;
                 }
 
-                async function onBoardSelection(e) {
+                function createCountryBoard(data, parent, callback) {                
+                    let container = $(`<div style="max-height:10rem;" class="col border border-2 border-secondary rounded bg-light m-2 d-flex flex-column justify-content-center"/>`);
+
+                    // if string, data is flag url
+                    if (typeof(data) == "string") {
+                        container.addClass("p-0"); // we want the image to take up the entire container, so no padding
+                        let flag = data; // just for clarification
+
+                        container.append(
+                            $(`<img class="mh-100 p-1 object-fit-contain" src="${flag}"/>`)
+                        );
+                    }
+                    else { // data is array containing name and capital
+                        container.addClass("py-4 mh-100"); // since less is displayed, needs more padding
+                        let name = data[0];
+                        let capital = data[1];
+
+                        container.append(
+                            $(`<p class="fs-5 m-1">${name}</p>`)
+                        );
+                        container.append(
+                            $(`<p class="fs-6">${capital}</p>`)
+                        );
+                    }
+
+                    if (callback) {
+                        container.unbind("click");
+                        container.click(callback);
+                    }
+
+                    container.appendTo(parent);
+                }
+
+                function drawCountryData(data, callback) {
+                    // clear previous displayed data
+                    let parent = $(`#game-container .container .row`);
+                    parent.empty();
+
+                    // draw new data
+                    data.forEach((country) => {
+                        createCountryBoard(country, parent, callback)
+                    });
+                }
+
+                async function onBoardSizeSelection(e) {
                     // load board container#
 
                     // populate board:
                     // - get selected region
                     let selectedRegion = $('input[name="region"]:checked')[0].id;
-                    console.log(selectedRegion);
 
                     // - calculate number of countries needed
-                    let numCountries = (e.target.id == "4 x 4") ? 16 : 8;
-                    console.log(numCountries);
+                    let boardSize = (e.target.id == "4 x 4") ? 16 : 8;
+                    let numCountries = boardSize / 2; // it'll take two boards to display each country
 
                     // - select number of countries
                     //      this function should need await & async but it works without ? just gonna use it to be safe
                     let countries = await getRandomCountriesByRegion(selectedRegion, numCountries); 
-                    console.log(countries);
 
                     // - for each country, load flag and name separately into list
-                    separateCountryData(countries);
+                    let separate_data = separateCountryData(countries);
+
                     // - 'scramble' list (make them random)
+                    let shuffled = shuffleArray(separate_data);
+
                     // - draw them onto html - make similar function to CreateRadioButtons?
+                    drawCountryData(shuffled, (e) => {
+                        onBoardClick(e, countries); // wrapping function so i can pass country data through too
+                    });
 
                     // number of matches text element, updated by cards on html
                     // button to show answers
 
                     // task 4 may require multiple callbacks passed thru as a list
                     // for hover, click etc ? idk maybe not 
+                }
+
+
+                // TASK 4
+
+                let last_selected = null;
+                function onBoardClick(e, country_data) {
+                    console.log(country_data);
+                    console.log(e);
+
+                    if (last_selected == null) {
+                        last_selected = e.currentTarget
+                        // highlight : addClass method to make border thicker & orange. 
+                    }
+                    else {
+                        // if current selected & last selected are same,
+                        // remove highlight stuff
+                        
+                        // if they are different, compare with country_data 
+                        // if incorrect, remove highlgiht stuff ( do w the above thing )
+                        // if correct, highlight in green, and no longer clickable. (add a check in this method for that)
+                        //             and update number of matches
+                        
+                        // number of matches should be visible alongside a Show answer button
+                        // this is task 5 stuff, not too hard at all
+
+                        last_selected = null;
+                    }
                 }
 
 
@@ -132,53 +227,21 @@
         <h3 class="pt-4 pb-2">Select a region:</h3>
 
         <div id="regions" class="d-flex justify-content-center">
-            <!-- loaded in jQuery @ Line 25-->
+            <!-- loaded in jQuery @ Line 36-->
         </div>
         
 
         <div id="board-container" style="visibility: hidden;">
             <h3 class="pt-5 pb-2">Choose the board size:</h3>
             <div id="board-sizes" class="d-flex flex-row justify-content-center">
-                <!-- loaded in jQuery @ Line 32-->
+                <!-- loaded in jQuery @ Line 50-->
             </div>
         </div>
 
         <div id="game-container" class="pt-3">
             <div class="container">
                 <div class="row row-cols-5"> <!-- cols-5 since each child has a margin that needs to be accounted for -->
-                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
-                        <p class="fs-5 m-1">Slovenia</p>
-                        <p class="fs-6">Capital: ldbjbbugj</p>
-                    </div>
-                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
-                        <p class="fs-5 m-1">Slovenia</p>
-                        <p class="fs-6">Capital: ldbjbbugj</p>
-                    </div>
-                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
-                        <p class="fs-5 m-1">Slovenia</p>
-                        <p class="fs-6">Capital: ldbjbbugj</p>
-                    </div>
-                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
-                        <p class="fs-5 m-1">Slovenia</p>
-                        <p class="fs-6">Capital: ldbjbbugj</p>
-                    </div>
-
-                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
-                        <p class="fs-5 m-1">Slovenia</p>
-                        <p class="fs-6">Capital: ldbjbbugj</p>
-                    </div>
-                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
-                        <p class="fs-5 m-1">Slovenia</p>
-                        <p class="fs-6">Capital: ldbjbbugj</p>
-                    </div>
-                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
-                        <p class="fs-5 m-1">Slovenia</p>
-                        <p class="fs-6">Capital: ldbjbbugj</p>
-                    </div>
-                    <div class="col border border-2 border-secondary rounded pb-5 bg-light m-3">
-                        <p class="fs-5 m-1">Slovenia</p>
-                        <p class="fs-6">Capital: ldbjbbugj</p>
-                    </div>
+                   <!-- loaded in jQuery @ Line 134-->
                 </div>
             </div>
         </div>
